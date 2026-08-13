@@ -15,7 +15,6 @@ import { categoryService } from '../../services/categoryService';
 import GRHHomeSection from '../../components/user/GRHHomeSection';
 import SupportSection from '../../components/user/SupportSection';
 import PropertyVideoCurations from '../../components/user/PropertyVideoCurations';
-import RecentActivityBar from '../../components/user/RecentActivityBar';
 import { api } from '../../services/apiService';
 import toast from 'react-hot-toast';
 
@@ -231,8 +230,6 @@ const Home = () => {
                     </div>
                 </div>
             </div>
-
-            <RecentActivityBar />
 
             <div className="mt-2 w-full px-4 md:px-6 lg:px-8 2xl:px-12 mx-auto flex flex-col gap-4">
                 {(!selectedType.id || selectedType.label === 'All') ? (
