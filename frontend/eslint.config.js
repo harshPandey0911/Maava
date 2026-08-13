@@ -33,4 +33,4 @@ export default defineConfig([
       'react/jsx-uses-react': 'off',
     },
   },
-])
+]);
