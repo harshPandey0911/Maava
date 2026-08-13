@@ -520,7 +520,7 @@ const AdminPropertiesSection = ({ searchCity, transactionType, title, subtitle, 
     const themeConfig = theme || themeMap[themeColor] || themeMap.emerald;
 
     return (
-        <section id="admin-properties-section" className="py-8 border-b border-gray-100">
+        <section id="admin-properties-section" className="pt-2 pb-6 border-b border-gray-100 last:border-0">
 
             {/* Header */}
             <div className="mb-4">

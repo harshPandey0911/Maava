@@ -6,9 +6,20 @@ import { BOOKING_STATUS } from '../utils/constants.js';
 import { createNotification } from '../controllers/notificationControllers/notificationController.js';
 import { findNearbyWorkers } from '../services/locationService.js';
 
-// The Wave Timeout in milliseconds (60 seconds)
+// The Wave Timeout in milliseconds (60 seconds) — controls ONLY how long the
+// scheduler waits before advancing to the next wave. Do NOT reuse this for
+// BookingRequest.expiresAt: that field carries a Mongo TTL index
+// (expireAfterSeconds: 0), so setting it to this same 60s value causes every
+// BookingRequest to self-delete almost immediately after creation — wiping
+// out the "who's already been notified" / "did everyone reject" tracking
+// this whole wave system depends on. Use BOOKING_REQUEST_TTL_MS for that.
 const WAVE_TIMEOUT_MS = 60000;
 const WORKERS_PER_WAVE = 3;
+
+// How long a BookingRequest record survives before Mongo's TTL index deletes
+// it. Matches the 1-hour expiry createBooking() already uses for Wave 1, so
+// waves 2+ (created here) don't disappear far sooner than Wave 1 does.
+const BOOKING_REQUEST_TTL_MS = 60 * 60 * 1000;
 
 // How long to keep retrying the nearby-worker search when NONE were found at
 // booking-creation time, before finally declaring "no workers available".
@@ -63,7 +74,7 @@ const handleInitialSearchRetry = async (booking, io) => {
         wave: 1,
         distance: pw.distance || null,
         sentAt: new Date(),
-        expiresAt: new Date(Date.now() + WAVE_TIMEOUT_MS)
+        expiresAt: new Date(Date.now() + BOOKING_REQUEST_TTL_MS)
       }));
 
       try {
@@ -259,7 +270,7 @@ export const startWaveScheduler = (io) => {
             wave: nextWaveNumber,
             distance: pw.distance,
             sentAt: new Date(),
-            expiresAt: new Date(Date.now() + WAVE_TIMEOUT_MS)
+            expiresAt: new Date(Date.now() + BOOKING_REQUEST_TTL_MS)
           }));
 
           await BookingRequest.insertMany(newRequests, { ordered: false });
